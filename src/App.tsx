@@ -208,6 +208,21 @@ export default function DataGrid() {
   return (
     <div className="flex flex-col h-full w-full">
       <h2 className="text-xl font-bold mb-4">Employee Data Grid with Schema Validation</h2>
+      {/* Display validation errors */}
+      {Object.keys(validationErrors).length > 0 && (
+        <div className="mt-4">
+          <ul className="list-disc pl-5">
+            {Object.entries(validationErrors).map(([rowId, errors]) =>
+              errors.map((error, index) => (
+                <li key={`${rowId}-${index}`} className="text-sm text-red-600">
+                  Row ID: <strong>{rowId}</strong>, Field: <strong>{error.field}</strong>, Error: {error.message}
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+      )}
+
       <div className="ag-theme-alpine w-full h-96">
         <AgGridReact
           ref={gridRef}
