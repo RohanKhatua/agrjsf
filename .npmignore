@@ -1,0 +1,44 @@
+# Development files
+src/
+public/
+.github/
+.vscode/
+
+# Config files
+tsconfig*.json
+vite.config.ts
+eslint.config.js
+components.json
+.eslintrc*
+
+# Test files
+**/*.test.*
+**/*.spec.*
+vitest.config.ts
+
+# Build tools
+*.lock
+.gitignore
+.prettierrc
+.prettierignore
+.nvmrc
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Documentation for development
+docs/
