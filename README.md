@@ -1,54 +1,75 @@
-# React + TypeScript + Vite
+# AGR-JSF: AG Grid with JSON Schema Form Validation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React TypeScript application that demonstrates the integration of AG Grid with JSON Schema validation, providing a powerful and customizable data grid with built-in form validation capabilities.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **AG Grid Integration**: Interactive data grid with sorting, filtering, and pagination
+- **JSON Schema Validation**: Validate data using JSON Schema standards
+- **Real-time Validation**: Visual feedback for validation errors directly in grid cells
+- **Type Safety**: Full TypeScript support for robust application development
+- **Custom Cell Editors**: Specialized editors for different data types
+- **Responsive Design**: Clean UI with Tailwind CSS styling
+- **Modern React**: Built with React 19 and functional components with hooks
 
-## Expanding the ESLint configuration
+## 📋 Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js (v18 or newer)
+- Bun (preferred) or npm/yarn
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+## 🛠️ Installation
+
+Clone the repository and install dependencies:
+
+```bash
+git clone <repository-url>
+cd agrjsf
+bun install  # or npm install / yarn
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🏃‍♂️ Development
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+Start the development server:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    "react-x": reactX,
-    "react-dom": reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs["recommended-typescript"].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
+```bash
+bun run dev  # or npm run dev / yarn dev
 ```
+
+This will start the development server at [http://localhost:5173](http://localhost:5173).
+
+## 📦 Build
+
+Create a production build:
+
+```bash
+bun run build  # or npm run build / yarn build
+```
+
+Preview the production build:
+
+```bash
+bun run preview  # or npm run preview / yarn preview
+```
+
+## 🧪 Linting
+
+Run linting checks:
+
+```bash
+bun run lint  # or npm run lint / yarn lint
+```
+
+## 🔧 Technologies Used
+
+- **React 19**: For building the user interface
+- **TypeScript**: For type safety and enhanced developer experience
+- **Vite**: For fast development and optimized builds
+- **AG Grid**: For powerful data grid functionality
+- **Ajv**: For JSON Schema validation
+- **Tailwind CSS**: For styling and UI components
+- **ESLint & Prettier**: For code quality and consistent formatting
+- **Husky**: For pre-commit hooks to ensure code quality
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
