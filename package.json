@@ -1,6 +1,6 @@
 {
   "name": "ag-grid-schema-validator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AG Grid with JSON Schema validation for React applications",
   "author": "Rohan Khatua",
   "license": "MIT",
@@ -28,7 +28,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/rohankhatua/ag-grid-schema-validator"
+    "url": "https://github.com/RohanKhatua/agrjsf"
   },
   "scripts": {
     "dev": "vite",
