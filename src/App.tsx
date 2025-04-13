@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, CellValueChangedEvent, ValueFormatterParams, ModuleRegistry, AllCommunityModule, themeMaterial, CellClassParams, CellStyle, ITooltipParams } from 'ag-grid-community';
 import Ajv, { ValidateFunction } from 'ajv';
@@ -31,7 +31,7 @@ export default function DataGrid() {
   ModuleRegistry.registerModules([AllCommunityModule]);
 
   // Define a schema that will be used for both RJSF and our custom validation
-  const jsonSchema = {
+  const jsonSchema = useMemo(() => ({
     type: "object",
     properties: {
       id: {
@@ -75,14 +75,17 @@ export default function DataGrid() {
       }
     },
     required: ["id", "name", "email", "age", "department"]
-  };
+  }), []);
 
   // Initialize Ajv
-  const ajv = new Ajv({ allErrors: true });
-  AjvFormats(ajv); // Add support for formats like "email" and "date"
+  const ajv = useMemo(() => {
+    const instance = new Ajv({ allErrors: true });
+    AjvFormats(instance); // Add support for formats like "email" and "date"
+    return instance;
+  }, []);
 
   // Compile the JSON Schema
-  const validateSchema: ValidateFunction = ajv.compile(jsonSchema);
+  const validateSchema: ValidateFunction = useMemo(() => ajv.compile(jsonSchema), [ajv, jsonSchema]);
 
   // Sample data
   const initialRowData: EmployeeData[] = [
@@ -91,12 +94,12 @@ export default function DataGrid() {
     { id: "EF9012", name: "Bob Johnson", email: "bob@example.com", age: 45, salary: 95000, department: "Sales", startDate: "2021-11-10" }
   ];
 
-  const [rowData, setRowData] = useState<EmployeeData[]>(initialRowData);
+  const [rowData] = useState<EmployeeData[]>(initialRowData);
   const [validationErrors, setValidationErrors] = useState<ValidationErrorsMap>({});
   const gridRef = useRef<AgGridReact>(null);
 
   // Validate a single row - custom validation following the schema rules
-  const validateRow = (data: EmployeeData): ValidationError[] => {
+  const validateRow = useCallback((data: EmployeeData): ValidationError[] => {
     const errors: ValidationError[] = [];
 
     // Validate the data against the schema
@@ -113,7 +116,7 @@ export default function DataGrid() {
     }
 
     return errors;
-  };
+  }, [validateSchema]);
 
   // Define column definitions
   const columnDefs: ColDef[] = [
@@ -168,7 +171,7 @@ export default function DataGrid() {
 
     const fieldErrors = validationErrors[rowData.id].filter(err => err.field === field);
 
-    return fieldErrors.length > 0 ? { backgroundColor: '#ffdddd' } : null;
+    return fieldErrors.length > 0 ? { backgroundColor: '#ffdddd' } : { backgroundColor: 'transparent' };
   };
 
   // Handle cell value changes
@@ -189,7 +192,7 @@ export default function DataGrid() {
       errors[row.id] = validateRow(row);
     });
     setValidationErrors(errors);
-  }, []);
+  }, [rowData, validateRow]);
 
   // Get error tooltip content
   const getTooltipContent = (params: ITooltipParams): string | null => {
