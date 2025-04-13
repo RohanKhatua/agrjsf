@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ColDef, CellValueChangedEvent, ValueFormatterParams, ModuleRegistry, AllCommunityModule, themeMaterial, CellClassParams, CellStyle, ITooltipParams } from 'ag-grid-community';
-import Ajv, { ValidateFunction } from 'ajv';
+import Ajv from 'ajv';
 import AjvFormats from 'ajv-formats';
 
 // Define the interface for our data model
@@ -74,7 +74,7 @@ export default function DataGrid() {
         title: "Start Date"
       }
     },
-    required: ["id", "name", "email", "age", "department"]
+    required: ["id", "email", "age", "department"]
   }), []);
 
   // Initialize Ajv
@@ -83,9 +83,6 @@ export default function DataGrid() {
     AjvFormats(instance); // Add support for formats like "email" and "date"
     return instance;
   }, []);
-
-  // Compile the JSON Schema
-  const validateSchema: ValidateFunction = useMemo(() => ajv.compile(jsonSchema), [ajv, jsonSchema]);
 
   // Sample data
   const initialRowData: EmployeeData[] = [
@@ -101,22 +98,47 @@ export default function DataGrid() {
   // Validate a single row - custom validation following the schema rules
   const validateRow = useCallback((data: EmployeeData): ValidationError[] => {
     const errors: ValidationError[] = [];
+    const requiredFields = jsonSchema.required;
+    const nonRequiredFields = Object.keys(jsonSchema.properties).filter(
+      (field) => !requiredFields.includes(field)
+    );
 
-    // Validate the data against the schema
-    const isValid = validateSchema(data);
+    console.log('Required fields:', requiredFields);
+    console.log('Non-required fields:', nonRequiredFields);
+    console.log('Data being validated:', data);
 
-    if (!isValid && validateSchema.errors) {
-      // Map Ajv errors to our ValidationError format
-      validateSchema.errors.forEach((error) => {
-        if (error.instancePath && error.message) {
-          const field = error.instancePath.replace('/', ''); // Remove leading slash
-          errors.push({ field, message: error.message });
+    // Process each field according to whether it's required or not
+    Object.keys(jsonSchema.properties).forEach((field) => {
+      const value = data[field as keyof EmployeeData];
+      const isRequired = requiredFields.includes(field);
+
+      // Handle required fields
+      if (isRequired) {
+        if (value === null || value === undefined || value === '') {
+          errors.push({ field, message: `${field} is required` });
+          return; // Skip further validation for this field if it's missing
         }
-      });
-    }
+      } else {
+        // Handle non-required fields
+        if (value === null || value === undefined) {
+          return; // Skip validation for non-required fields that are null/undefined
+        }
+      }
+
+      // If we get here, the field has a value and should be validated against its schema
+      const fieldSchema = jsonSchema.properties[field as keyof typeof jsonSchema.properties];
+      const ajvValidate = ajv.compile(fieldSchema);
+      const isValid = ajvValidate(value);
+
+      if (!isValid && ajvValidate.errors) {
+        ajvValidate.errors.forEach(error => {
+          errors.push({ field, message: error.message || `Invalid ${field}` });
+        });
+      }
+    });
 
     return errors;
-  }, [validateSchema]);
+  }, [jsonSchema, ajv]);
 
   // Define column definitions
   const columnDefs: ColDef[] = [
@@ -183,6 +205,9 @@ export default function DataGrid() {
       ...prev,
       [data.id]: errors
     }));
+
+    console.log('Updated row data:', data);
+    console.log('Validation errors:', errors);
   };
 
   // Validate all rows on initial load
