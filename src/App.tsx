@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, CellValueChangedEvent, ValueFormatterParams, ICellRendererParams, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { ColDef, CellValueChangedEvent, ValueFormatterParams, ICellRendererParams, ModuleRegistry, AllCommunityModule, themeMaterial } from 'ag-grid-community';
 
 // Define the interface for our data model
 interface EmployeeData {
@@ -254,6 +252,9 @@ export default function DataGrid() {
           }}
           onCellValueChanged={onCellValueChanged}
           stopEditingWhenCellsLoseFocus={true}
+          gridOptions={{
+            theme: themeMaterial
+          }}
         />
       </div>
       <div className="mt-4">
