@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, CellValueChangedEvent, ValueFormatterParams, ModuleRegistry, AllCommunityModule, themeMaterial, CellClassParams, CellStyle, ITooltipParams } from 'ag-grid-community';
+import { ColDef, CellValueChangedEvent, ValueFormatterParams, ModuleRegistry, AllCommunityModule, CellClassParams, CellStyle, ITooltipParams, themeQuartz } from 'ag-grid-community';
 import Ajv from 'ajv';
 import AjvFormats from 'ajv-formats';
 
@@ -88,7 +88,14 @@ export default function DataGrid() {
   const initialRowData: EmployeeData[] = [
     { id: "AB1234", name: "John Doe", email: "john@example.com", age: 32, salary: 75000, department: "Engineering", startDate: "2023-01-15" },
     { id: "CD5678", name: "Jane Smith", email: "jane@example.com", age: 28, salary: 82000, department: "Marketing", startDate: "2022-05-20" },
-    { id: "EF9012", name: "Bob Johnson", email: "bob@example.com", age: 45, salary: 95000, department: "Sales", startDate: "2021-11-10" }
+    { id: "EF9012", name: "Bob Johnson", email: "bob@example.com", age: 45, salary: 95000, department: "Sales", startDate: "2021-11-10" },
+    { id: "GH1920", name: "Alice Brown", email: "alice@example.com", age: 30, salary: 67000, department: "HR", startDate: "2023-03-01" },
+    { id: "IJ3456", name: "Charlie Davis", email: "charlie@example.com", age: 40, salary: 88000, department: "Finance", startDate: "2020-07-15" },
+    { id: "KL7890", name: "Emily White", email: "emily@example.com", age: 26, salary: 72000, department: "Engineering", startDate: "2023-06-10" },
+    { id: "MN1234", name: "David Green", email: "david@example.com", age: 35, salary: 81000, department: "Marketing", startDate: "2021-09-25" },
+    { id: "OP5678", name: "Sophia Black", email: "sophia@example.com", age: 29, salary: 68000, department: "HR", startDate: "2022-12-05" },
+    { id: "QR9012", name: "James Blue", email: "james@example.com", age: 50, salary: 97000, department: "Sales", startDate: "2019-04-18" },
+    { id: "ST3456", name: "Olivia Gray", email: "olivia@example.com", age: 33, salary: 89000, department: "Finance", startDate: "2020-10-30" }
   ];
 
   const [rowData] = useState<EmployeeData[]>(initialRowData);
@@ -234,7 +241,7 @@ export default function DataGrid() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex flex-col h-full w-full p-10">
       <h2 className="text-xl font-bold mb-4">Employee Data Grid with Schema Validation</h2>
       {/* Display validation errors */}
       {Object.keys(validationErrors).length > 0 && (
@@ -251,7 +258,7 @@ export default function DataGrid() {
         </div>
       )}
 
-      <div className="ag-theme-alpine w-full h-96">
+      <div className="ag-theme-alpine w-full h-96" style={{ overflow: 'visible' }}>
         <AgGridReact
           ref={gridRef}
           rowData={rowData}
@@ -265,8 +272,12 @@ export default function DataGrid() {
           onCellValueChanged={onCellValueChanged}
           stopEditingWhenCellsLoseFocus={true}
           gridOptions={{
-            theme: themeMaterial
+            theme: themeQuartz,
+            alwaysShowVerticalScroll: true,
+            suppressScrollOnNewData: false
           }}
+          pagination
+          paginationPageSize={5}
         />
       </div>
       <div className="mt-4">
