@@ -75,7 +75,38 @@ export function SchemaGrid<T extends object>({
   const [validationErrors, setValidationErrors] = useState<ValidationErrorsMap>(
     {},
   );
+  // Map for storing generated IDs when data doesn't have idField
+  const [rowIdMap] = useState<Map<object, string>>(new Map());
   const gridRef = useRef<AgGridReact>(null);
+
+  // Generate a unique ID for a row that doesn't have an idField
+  const generateRowId = useCallback(
+    (row: T): string => {
+      if (!rowIdMap.has(row)) {
+        rowIdMap.set(
+          row,
+          `generated-id-${Math.random().toString(36).substring(2, 9)}`,
+        );
+      }
+      return rowIdMap.get(row) as string;
+    },
+    [rowIdMap],
+  );
+
+  // Get a row's ID, either from the idField or generated
+  const getRowId = useCallback(
+    (row: T): string => {
+      // Use idField if it exists and has a value in the row
+      const idValue = row[idField as keyof T];
+      if (idValue !== undefined && idValue !== null) {
+        return String(idValue);
+      }
+
+      // Otherwise use or generate a unique ID
+      return generateRowId(row);
+    },
+    [idField, generateRowId],
+  );
 
   // Initialize Ajv
   const ajv = useMemo(() => {
@@ -156,9 +187,12 @@ export function SchemaGrid<T extends object>({
     rowData: any,
     field: string,
   ): React.CSSProperties | null => {
-    if (!rowData || !validationErrors[rowData[idField as string]]) return null;
+    if (!rowData) return null;
 
-    const fieldErrors = validationErrors[rowData[idField as string]].filter(
+    const rowId = getRowId(rowData);
+    if (!validationErrors[rowId]) return null;
+
+    const fieldErrors = validationErrors[rowId].filter(
       (err) => err.field === field,
     );
 
@@ -170,7 +204,7 @@ export function SchemaGrid<T extends object>({
   // Handle cell value changes
   const handleCellValueChanged = (params: CellValueChangedEvent): void => {
     const data = params.data as T;
-    const rowId = data[idField as keyof T] as unknown as string;
+    const rowId = getRowId(data);
     const errors = validateRow(data);
 
     setValidationErrors((prev) => ({
@@ -196,7 +230,7 @@ export function SchemaGrid<T extends object>({
   useEffect(() => {
     const errors: ValidationErrorsMap = {};
     rowData.forEach((row) => {
-      const rowId = row[idField as keyof T] as unknown as string;
+      const rowId = getRowId(row);
       errors[rowId] = validateRow(row);
     });
 
@@ -205,21 +239,21 @@ export function SchemaGrid<T extends object>({
     if (onValidationError) {
       onValidationError(errors);
     }
-  }, [rowData, validateRow, idField, onValidationError]);
+  }, [rowData, validateRow, getRowId, onValidationError]);
 
   // Get error tooltip content for cells with validation errors
   const getTooltipContent = (params: ITooltipParams): string | null => {
     const data = params.data as T;
     if (!data) return null;
 
-    const rowId = data[idField as keyof T] as unknown as string;
+    const rowId = getRowId(data);
     const field = params.colDef
       ? "field" in params.colDef
         ? params.colDef.field
         : undefined
       : undefined;
 
-    if (!rowId || !field || !validationErrors[rowId]) return null;
+    if (!field || !validationErrors[rowId]) return null;
 
     const fieldErrors = validationErrors[rowId].filter(
       (err) => err.field === field,
@@ -236,6 +270,7 @@ export function SchemaGrid<T extends object>({
         ref={gridRef}
         rowData={rowData}
         columnDefs={generatedColumnDefs}
+        getRowId={(params) => getRowId(params.data)}
         defaultColDef={{
           sortable: true,
           filter: true,
