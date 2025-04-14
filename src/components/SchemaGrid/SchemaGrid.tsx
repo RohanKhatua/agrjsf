@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, {
   useState,
   useEffect,
@@ -42,6 +43,8 @@ export interface SchemaGridProps<T extends object> {
   idField?: keyof T;
   // Optional callback when validation errors occur
   onValidationError?: (errors: ValidationErrorsMap) => void;
+  // Optional callback when all data is valid
+  onValidData?: (validData: T[]) => void;
   // Optional callback when cell values change
   onCellValueChanged?: (params: CellValueChangedEvent) => void;
   // Optional pagination settings
@@ -62,6 +65,7 @@ export function SchemaGrid<T extends object>({
   columnDefs,
   idField = "id" as keyof T,
   onValidationError,
+  onValidData,
   onCellValueChanged,
   pagination = true,
   paginationPageSize = 10,
@@ -115,6 +119,27 @@ export function SchemaGrid<T extends object>({
     return instance;
   }, []);
 
+  const getCellStyle = useCallback(
+    (
+      rowData: T | null | undefined,
+      field: string,
+    ): React.CSSProperties | null => {
+      if (!rowData) return null;
+
+      const rowId = getRowId(rowData);
+      if (!validationErrors[rowId]) return null;
+
+      const fieldErrors = validationErrors[rowId].filter(
+        (err) => err.field === field,
+      );
+
+      return fieldErrors.length > 0
+        ? { backgroundColor: "#ffdddd" }
+        : { backgroundColor: "transparent" };
+    },
+    [getRowId, validationErrors],
+  );
+
   // If no custom column definitions are provided, generate them from the schema
   const generatedColumnDefs = useMemo(() => {
     if (columnDefs) return columnDefs;
@@ -136,7 +161,7 @@ export function SchemaGrid<T extends object>({
         jsonSchema,
       );
     });
-  }, [jsonSchema, columnDefs]);
+  }, [columnDefs, jsonSchema, getCellStyle]);
 
   // Validate a single row against the schema
   const validateRow = useCallback(
@@ -183,23 +208,6 @@ export function SchemaGrid<T extends object>({
   );
 
   // Get cell style based on validation errors
-  const getCellStyle = (
-    rowData: any,
-    field: string,
-  ): React.CSSProperties | null => {
-    if (!rowData) return null;
-
-    const rowId = getRowId(rowData);
-    if (!validationErrors[rowId]) return null;
-
-    const fieldErrors = validationErrors[rowId].filter(
-      (err) => err.field === field,
-    );
-
-    return fieldErrors.length > 0
-      ? { backgroundColor: "#ffdddd" }
-      : { backgroundColor: "transparent" };
-  };
 
   // Handle cell value changes
   const handleCellValueChanged = (params: CellValueChangedEvent): void => {
@@ -239,7 +247,27 @@ export function SchemaGrid<T extends object>({
     if (onValidationError) {
       onValidationError(errors);
     }
-  }, [rowData, validateRow, getRowId, onValidationError]);
+
+    // Check if all data is valid and call the onValidData callback if it is
+    const hasErrors = Object.values(errors).some(
+      (rowErrors) => rowErrors.length > 0,
+    );
+    if (!hasErrors && onValidData) {
+      onValidData([...rowData]);
+    }
+  }, [rowData, validateRow, getRowId, onValidationError, onValidData]);
+
+  // Check if data is valid after cell value changes and call onValidData if needed
+  useEffect(() => {
+    if (onValidData) {
+      const hasErrors = Object.values(validationErrors).some(
+        (rowErrors) => rowErrors.length > 0,
+      );
+      if (!hasErrors) {
+        onValidData([...rowData]);
+      }
+    }
+  }, [validationErrors, rowData, onValidData]);
 
   // Get error tooltip content for cells with validation errors
   const getTooltipContent = (params: ITooltipParams): string | null => {

@@ -99,6 +99,7 @@ export default MyDataGrid;
 | columnDefs         | `ColDef[]`                                | Custom column definitions (optional)         | Auto-generated    |
 | idField            | `keyof T`                                 | Field to use as row identifier               | "id"              |
 | onValidationError  | `(errors: ValidationErrorsMap) => void`   | Callback when validation errors occur        | undefined         |
+| onValidData        | `(validData: T[]) => void`                | Callback when all data is valid              | undefined         |
 | onCellValueChanged | `(params: CellValueChangedEvent) => void` | Callback when cell values change             | undefined         |
 | pagination         | `boolean`                                 | Enable pagination                            | true              |
 | paginationPageSize | `number`                                  | Number of rows per page                      | 10                |
@@ -176,6 +177,57 @@ function ValidationHandlingGrid() {
       rowData={rowData}
       onValidationError={handleValidationError}
     />
+  );
+}
+```
+
+### Working with Valid Data
+
+```tsx
+function ValidDataHandlingGrid() {
+  const [isDataValid, setIsDataValid] = useState(false);
+
+  // Track validation state
+  const handleValidationError = (errors) => {
+    const hasErrors = Object.values(errors).some(
+      (rowErrors) => rowErrors.length > 0,
+    );
+    setIsDataValid(!hasErrors);
+  };
+
+  // Send data to server when valid
+  const handleValidData = (validData) => {
+    console.log("Data is valid, ready to submit:", validData);
+
+    // Example: Send to your API
+    fetch("https://api.example.com/data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(validData),
+    })
+      .then((response) => response.json())
+      .then((result) => console.log("Success:", result))
+      .catch((error) => console.error("Error:", error));
+  };
+
+  return (
+    <>
+      {isDataValid ? (
+        <div className="success-message">
+          All data is valid and ready to submit!
+        </div>
+      ) : (
+        <div className="error-message">
+          Please correct validation errors before submitting
+        </div>
+      )}
+      <SchemaGrid
+        jsonSchema={jsonSchema}
+        rowData={rowData}
+        onValidationError={handleValidationError}
+        onValidData={handleValidData}
+      />
+    </>
   );
 }
 ```

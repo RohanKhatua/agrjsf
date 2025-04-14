@@ -82,6 +82,28 @@ export default function App() {
     },
   ]);
 
+  // Track if data is valid to show status message
+  const [isDataValid, setIsDataValid] = useState(true);
+  const [lastValidData, setLastValidData] = useState<any[] | null>(null);
+
+  // Handle valid data (could be used to send to server)
+  const handleValidData = (validData: any[]) => {
+    console.log("All data is valid:", validData);
+    setIsDataValid(true);
+    setLastValidData(validData);
+
+    // In a real app, you might send this data to your server
+    // sendToServer(validData);
+  };
+
+  // Handle validation errors
+  const handleValidationError = (errors: any) => {
+    console.log("Validation errors:", errors);
+    setIsDataValid(
+      Object.values(errors).every((rowErrors: any[]) => rowErrors.length === 0),
+    );
+  };
+
   return (
     <div className="flex flex-col p-10 h-screen">
       <h1 className="text-2xl font-bold mb-6">AG Grid Schema Validator Demo</h1>
@@ -97,6 +119,24 @@ export default function App() {
         </p>
       </div>
 
+      {/* Status message showing if data is valid */}
+      <div
+        className={`p-4 mb-4 rounded-md ${isDataValid ? "bg-green-100" : "bg-red-100"}`}
+      >
+        <p
+          className={`font-medium ${isDataValid ? "text-green-800" : "text-red-800"}`}
+        >
+          {isDataValid
+            ? "All data is valid! Ready to submit to server."
+            : "Please correct validation errors before submitting."}
+        </p>
+        {lastValidData && isDataValid && (
+          <p className="text-sm text-gray-700 mt-2">
+            Last valid data snapshot available - {lastValidData.length} records
+          </p>
+        )}
+      </div>
+
       {/* Simple usage example */}
       <SchemaGrid
         jsonSchema={jsonSchema}
@@ -105,9 +145,8 @@ export default function App() {
         height="400px"
         pagination={true}
         paginationPageSize={10}
-        onValidationError={(errors) =>
-          console.log("Validation errors:", errors)
-        }
+        onValidationError={handleValidationError}
+        onValidData={handleValidData}
       />
     </div>
   );
