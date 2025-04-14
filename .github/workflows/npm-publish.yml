@@ -1,4 +1,4 @@
-# This workflow will run tests using node and then publish a package to npm
+# This workflow will run tests using node and then publish a package to npm and GitHub Packages
 # For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
 
 name: Node.js Package
@@ -39,3 +39,30 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  publish-gpr:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com/
+          scope: "@rohankhatua"
+      - name: Clean install dependencies
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+      - name: Build package
+        run: npm run build
+      - name: Update package name for GitHub Packages
+        run: |
+          # GitHub packages require the package name to be scoped to the owner
+          sed -i 's/"name": "ag-grid-schema-validator"/"name": "@rohankhatua\/ag-grid-schema-validator"/' package.json
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
